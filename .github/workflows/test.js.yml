@@ -1,0 +1,32 @@
+name: Node.js CI
+
+on: [push]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [23.6.0]
+        # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+    # those apt packages are needed for npm install (canvas) to work properly.
+    - run: npm install
+    - run: echo "deb http://www.rabbitmq.com/debian/ testing main"  | sudo tee  /etc/apt/sources.list.d/rabbitmq.list > /dev/null
+    - run: wget https://www.rabbitmq.com/rabbitmq-signing-key-public.asc
+    - run: sudo apt-key add rabbitmq-signing-key-public.asc
+    - run: sudo apt-get update
+    - run: sudo apt-get install rabbitmq-server -y
+    - run: sudo service rabbitmq-server start
+    - run: sudo rabbitmq-plugins enable rabbitmq_management
+    - run: sudo service rabbitmq-server restart
+    - run: npx mocha test/integration.test.js
