@@ -22,3 +22,4 @@ jobs:
     # those apt packages are needed for npm install (canvas) to work properly.
     - run: npm install
     - run: bash ./scripts/install_rabbitmq.sh
+    - run: npx mocha ./test/integration.test.js
